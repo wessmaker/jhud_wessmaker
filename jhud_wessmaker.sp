@@ -669,7 +669,8 @@ void JHUD_CalculateStats(int client, float vel[3], float angles[3])
 
 void JHUD_DrawStats(int client, int target)
 {
-	
+
+	float totalPercent = ((g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target]) * 100.0);
 	float velocity[3];
 	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", velocity);
 	
@@ -699,23 +700,25 @@ void JHUD_DrawStats(int client, int target)
 		Format(fastbuffer, sizeof(fastbuffer), "");
 		Format(slowbuffer, sizeof(slowbuffer), "");
 	}
-	
-	char sMessage[256];
-	
-	if(coeffsum < 60) rgb = colors[RED];
-	else if(coeffsum >= 60 && coeffsum < 80) rgb = colors[GREEN];
-	else if(coeffsum >= 80 && coeffsum < 90) rgb = colors[CYAN];
-	else if(coeffsum >= 90 && coeffsum < 100) rgb = colors[ORANGE];
-	else rgb = colors[WHITE];
-	
 
+	char sMessage[256];
 	if(g_iJump[target] > 1)
 	{
-		Format(sMessage, sizeof(sMessage), "%i: %i\n%s%.2f%%%s", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), fastbuffer, coeffsum, slowbuffer);
+		if(coeffsum < 60) rgb = colors[RED];
+		else if(coeffsum >= 60 && coeffsum < 80)  rgb = colors[GREEN];
+		else if(coeffsum >= 80 && coeffsum < 90)  rgb = colors[CYAN];
+		else if(coeffsum >= 90 && coeffsum < 100) rgb = colors[ORANGE];
+		else rgb = colors[WHITE];
+		Format(sMessage, sizeof(sMessage), "%i: %i (%.0f%%%%)\n%s%.2f%%%s", g_iJump[target], RoundToFloor(GetVectorLength(velocity)), totalPercent, fastbuffer, coeffsum, slowbuffer);
 	}
 	else
 	{
-		Format(sMessage, sizeof(sMessage), "%i: %i", g_iJump[target], RoundToFloor(GetVectorLength(velocity)));
+		int preSpeed = RoundToFloor(GetVectorLength(velocity));
+		if	(preSpeed >= 287) 	rgb = colors[CYAN];
+		else if	(preSpeed >= 285) 	rgb = colors[GREEN];
+		else if	(preSpeed >= 280) 	rgb = colors[YELLOW];
+		else 				rgb = colors[RED];
+		Format(sMessage, sizeof(sMessage), "%i: %i", g_iJump[target], preSpeed);
 	}
 
 	
@@ -760,3 +763,4 @@ stock void SetCookie(int client, Handle hCookie, int n)
 	IntToString(n, strCookie, sizeof(strCookie));
 	SetClientCookie(client, hCookie, strCookie);
 }
+
